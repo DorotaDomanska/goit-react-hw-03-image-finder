@@ -3,7 +3,7 @@ import { Searchbar } from './Searchbar';
 // import { Loader } from './Loader';
 import { ImageGallery } from './ImageGallery';
 import { ImageGalleryItem } from './ImageGalleryItem';
-// import { Button } from './Button';
+import { Button } from './Button';
 // import { Modal } from './Modal';
 import { fetchImages } from './api/fetchImages.js';
 
@@ -11,21 +11,45 @@ export class App extends Component {
   state = {
     isLoading: false,
     images: [],
+    key: '31924475-938fe2c560f7db586b0b43322',
+    q: '',
+    image_type: 'photo',
+    orientation: 'horizontal',
+    page: 1,
+    per_page: 12,
   };
 
-  handleRequest = async params => {
+  handleChange = text => {
+    this.setState({
+      q: text,
+    });
+  };
+
+  handleRequest = async () => {
     this.setState({
       isLoading: true,
     });
 
-    const images = await fetchImages(params);
-    console.log(images);
+    const { key, q, image_type, orientation, per_page } = this.state;
+
+    const imagesFromApi = await fetchImages({
+      key,
+      q,
+      image_type,
+      orientation,
+      per_page,
+    });
+
     this.setState({
+      images: imagesFromApi.hits,
       isLoading: false,
     });
   };
 
   render() {
+    const { images } = this.state;
+    const totalPages = Math.ceil(images.totalHits / 12);
+
     return (
       <div
         style={{
@@ -37,13 +61,16 @@ export class App extends Component {
           color: '#010101',
         }}
       >
-        <Searchbar onFetchImages={this.handleRequest} />
+        <Searchbar
+          onInputChange={this.handleChange}
+          onFetchImages={this.handleRequest}
+        />
         {/* <Loader /> */}
         <ImageGallery>
-          <ImageGalleryItem />
+          <ImageGalleryItem images={this.state.images} />
         </ImageGallery>
-        {/* <Button />
-      <Modal /> */}
+        {totalPages > 1 && <Button />}
+        {/* <Modal /> */}
       </div>
     );
   }
