@@ -11,12 +11,9 @@ export class App extends Component {
   state = {
     isLoading: false,
     images: [],
-    key: '31924475-938fe2c560f7db586b0b43322',
+    totalHits: null,
     q: '',
-    image_type: 'photo',
-    orientation: 'horizontal',
     page: 1,
-    per_page: 12,
   };
 
   handleChange = text => {
@@ -30,25 +27,36 @@ export class App extends Component {
       isLoading: true,
     });
 
-    const { key, q, image_type, orientation, per_page } = this.state;
+    const { q } = this.state;
 
-    const imagesFromApi = await fetchImages({
-      key,
-      q,
-      image_type,
-      orientation,
-      per_page,
-    });
+    const imagesFromApi = await fetchImages({ q });
 
     this.setState({
       images: imagesFromApi.hits,
+      totalHits: imagesFromApi.totalHits,
       isLoading: false,
     });
   };
 
+  handleLoadMore = async () => {
+    this.setState(prevState => ({
+      isLoading: true,
+      page: prevState.page + 1,
+    }));
+
+    const { q, page } = this.state;
+
+    const imagesFromApi = await fetchImages({ q, page });
+
+    this.setState(state => ({
+      images: state.images.concat(imagesFromApi.hits),
+      isLoading: false,
+    }));
+  };
+
   render() {
-    const { images } = this.state;
-    const totalPages = Math.ceil(images.totalHits / 12);
+    const { images, totalHits } = this.state;
+    const totalPages = Math.ceil(totalHits / 12);
 
     return (
       <div
@@ -67,9 +75,9 @@ export class App extends Component {
         />
         {/* <Loader /> */}
         <ImageGallery>
-          <ImageGalleryItem images={this.state.images} />
+          <ImageGalleryItem images={images} />
         </ImageGallery>
-        {totalPages > 1 && <Button />}
+        {totalPages > 1 && <Button onLoadMore={this.handleLoadMore} />}
         {/* <Modal /> */}
       </div>
     );
