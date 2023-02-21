@@ -5,6 +5,7 @@ import { ImageGallery } from './ImageGallery';
 import { ImageGalleryItem } from './ImageGalleryItem';
 import { Button } from './Button';
 import { fetchImages } from './api/fetchImages.js';
+import PropTypes from 'prop-types';
 
 export class App extends Component {
   state = {
@@ -76,7 +77,7 @@ export class App extends Component {
           onFetchImages={this.handleRequest}
         />
         <ImageGallery>
-          <ImageGalleryItem images={images}/>      
+          <ImageGalleryItem images={images} />
         </ImageGallery>
         {isLoading && (
           <ColorRing
@@ -96,3 +97,16 @@ export class App extends Component {
     );
   }
 }
+
+ImageGalleryItem.propTypes = {
+  images: PropTypes.array.isRequired,
+};
+
+Searchbar.propTypes = {
+  onInputChange: PropTypes.func.isRequired,
+  onFetchImages: PropTypes.func.isRequired,
+};
+
+Button.propTypes = {
+  onLoadMore: PropTypes.func.isRequired,
+};

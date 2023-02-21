@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { Modal } from './Modal';
 import css from './Styles.module.css';
+import PropTypes from 'prop-types';
 
 export class ImageGalleryItem extends Component {
   state = {
@@ -22,6 +23,27 @@ export class ImageGalleryItem extends Component {
     });
   };
 
+  escFunction = evt => {
+    if (evt.key === 'Escape') {
+      this.setState({
+        isModalOpen: false,
+      });
+    }
+  };
+
+  closeModal = () => {
+    this.setState({
+      isModalOpen: false,
+    });
+  };
+
+  componentDidMount() {
+    document.addEventListener('keydown', this.escFunction);
+  }
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.escFunction);
+  }
+
   render() {
     const { images } = this.props;
     const { isModalOpen, imgUrl, imgTags } = this.state;
@@ -39,8 +61,20 @@ export class ImageGalleryItem extends Component {
             />
           </li>
         ))}
-        {isModalOpen && <Modal imageUrl={imgUrl} imageTags={imgTags} />}
+        {isModalOpen && (
+          <Modal
+            imageUrl={imgUrl}
+            imageTags={imgTags}
+            onCloseModal={this.closeModal}
+          />
+        )}
       </>
     );
   }
 }
+
+Modal.propTypes = {
+  imageUrl: PropTypes.string.isRequired,
+  imageTags: PropTypes.string.isRequired,
+  onCloseModal: PropTypes.func.isRequired,
+};
