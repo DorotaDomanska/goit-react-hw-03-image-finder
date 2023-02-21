@@ -1,10 +1,9 @@
 import { Component } from 'react';
 import { Searchbar } from './Searchbar';
-// import { Loader } from './Loader';
+import { ColorRing } from 'react-loader-spinner';
 import { ImageGallery } from './ImageGallery';
 import { ImageGalleryItem } from './ImageGalleryItem';
 import { Button } from './Button';
-// import { Modal } from './Modal';
 import { fetchImages } from './api/fetchImages.js';
 
 export class App extends Component {
@@ -25,24 +24,25 @@ export class App extends Component {
   handleRequest = async () => {
     this.setState({
       isLoading: true,
+      page: 1,
     });
 
     const { q } = this.state;
 
     const imagesFromApi = await fetchImages({ q });
 
-    this.setState({
+    this.setState(state => ({
       images: imagesFromApi.hits,
       totalHits: imagesFromApi.totalHits,
       isLoading: false,
-    });
+      page: this.state.page + 1,
+    }));
   };
 
   handleLoadMore = async () => {
-    this.setState(prevState => ({
+    this.setState({
       isLoading: true,
-      page: prevState.page + 1,
-    }));
+    });
 
     const { q, page } = this.state;
 
@@ -51,12 +51,14 @@ export class App extends Component {
     this.setState(state => ({
       images: state.images.concat(imagesFromApi.hits),
       isLoading: false,
+      page: state.page + 1,
     }));
   };
 
   render() {
-    const { images, totalHits } = this.state;
+    const { images, totalHits, isLoading, page } = this.state;
     const totalPages = Math.ceil(totalHits / 12);
+    console.log(page);
 
     return (
       <div
@@ -73,12 +75,23 @@ export class App extends Component {
           onInputChange={this.handleChange}
           onFetchImages={this.handleRequest}
         />
-        {/* <Loader /> */}
         <ImageGallery>
-          <ImageGalleryItem images={images} />
+          <ImageGalleryItem images={images}/>      
         </ImageGallery>
-        {totalPages > 1 && <Button onLoadMore={this.handleLoadMore} />}
-        {/* <Modal /> */}
+        {isLoading && (
+          <ColorRing
+            visible={true}
+            height="80"
+            width="80"
+            ariaLabel="blocks-loading"
+            wrapperStyle={{}}
+            wrapperClass="blocks-wrapper"
+            colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
+          />
+        )}
+        {totalPages > 1 && totalPages >= page && (
+          <Button onLoadMore={this.handleLoadMore} />
+        )}
       </div>
     );
   }
